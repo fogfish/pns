@@ -1,0 +1,19 @@
+{application, pns,
+   [
+      {description, "process name space"},
+      {vsn, "1.0.0"},
+      {modules, [
+         pns,
+         pns_sup,
+         pns_app
+      ]},
+      {registered, []},
+      {applications, [
+         kernel,
+         stdlib
+      ]},
+      {mod, {pns_app, []}},
+      {env, [
+      ]}
+   ]
+}.
