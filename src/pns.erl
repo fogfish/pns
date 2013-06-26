@@ -30,12 +30,7 @@
    lookup/1,  lookup/2,
    map/2, fold/3,
    '!'/2, '!'/3, 
-   pid/1, pid/2,
-
-   %% attribute registry
-   put/2, put/3, 
-   get/1, get/2,
-   remove/1, remove/2
+   pid/1, pid/2
 ]).
 
 %%
@@ -57,8 +52,7 @@ register(Key) ->
 register(Ns, Key) ->
    pns:register(Ns, Key, self()).
 
-register(Ns, Key, Pid)
- when is_pid(Pid) ->
+register(Ns, Key, Pid) ->
    case ets:insert_new(pns, {{Ns, Key}, Pid}) of
       true  -> 
          ok;
@@ -102,7 +96,9 @@ whereis(Ns, Key) ->
             true  -> Pid;
             false -> undefined
          end;      
-      _            -> 
+      [{_, Val}]  ->
+         Val;
+      _           -> 
          undefined
    end.   
  
@@ -116,7 +112,7 @@ lookup(Mask) ->
 
 lookup(Ns, Mask) ->
    List = ets:select(pns, [{ {{Ns, Mask}, '_'}, [], ['$_'] }]),
-   [{Key, Pid} || {{_, Key}, Pid} <- List, is_pid(Pid), is_process_alive(Pid)].
+   [{Key, Val} || {{_, Key}, Val} <- List, is_valid(Val)].
 
 %%
 %% map function over name space
@@ -126,8 +122,8 @@ lookup(Ns, Mask) ->
 map(Fun, Ns0) ->
    qlc:e(
       qlc:q([ 
-         Fun({Uid, Pid}) 
-         || {{Ns, Uid}, Pid} <- ets:table(pns), Ns =:= Ns0, is_pid(Pid), is_process_alive(Pid)
+         Fun({Key, Val}) 
+         || {{Ns, Key}, Val} <- ets:table(pns), Ns =:= Ns0, is_valid(Val)
       ])
    ).
    
@@ -138,7 +134,7 @@ map(Fun, Ns0) ->
 fold(Fun, Acc0, Ns0) ->
    qlc:fold(Fun, Acc0, 
       qlc:q([ 
-         {Uid, Pid} || {{Ns, Uid}, Pid} <- ets:table(pns), Ns =:= Ns0, is_pid(Pid), is_process_alive(Pid)
+         {Uid, Pid} || {{Ns, Uid}, Pid} <- ets:table(pns), Ns =:= Ns0, is_valid(Pid)
       ])
    ).      
 
@@ -162,27 +158,8 @@ pid(Ns, Key) ->
 
 %%
 %%
-put(Key, Val) ->
-   pns:put(local, Key, Val).
-
-put(Ns, Key, Val) ->
-   ets:insert(pns, {{Ns, Key}, Val}),
-   ok.
-
-%%
-%%
-get(Key) ->
-   pns:get(local, Key).
-
-get(Ns, Key) ->
-   case ets:lookup(pns, {Ns, Key}) of
-      [{_, Val}] -> Val;
-      _          -> undefined
-   end.   
-
-remove(Key) ->
-   pns:remove(local, Key).
-
-remove(Ns, Key) ->
-   ets:delete(pns, {Ns, Key}),
-   ok.
+is_valid(X) 
+ when is_pid(X) ->
+   is_process_alive(X);
+is_valid(_) ->
+   true.
