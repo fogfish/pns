@@ -17,7 +17,7 @@
 %%   @description
 %%     process name-space
 -module(pns).
--author(dmkolesnikov@gmail.com).
+-author('Dmitry Kolesnikov <dmkolesnikov@gmail.com>').
 -include_lib("stdlib/include/qlc.hrl").
 
 -export([

@@ -17,7 +17,7 @@
 %%   @description
 %%
 -module(pns_app).
--author(dmkolesnikov@gmail.com).
+-author('Dmitry Kolesnikov <dmkolesnikov@gmail.com>').
 
 -export([
    start/2, stop/1

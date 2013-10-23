@@ -17,7 +17,7 @@
 %%   @description
 %%     local registry
 -module(pns_reg).
--author(dmkolesnikov@gmail.com).
+-author('Dmitry Kolesnikov <dmkolesnikov@gmail.com>').
 
 -export([
    start_link/0, 

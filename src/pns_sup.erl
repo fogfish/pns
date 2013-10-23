@@ -18,7 +18,7 @@
 %%
 -module(pns_sup).
 -behaviour(supervisor).
--author(dmkolesnikov@gmail.com).
+-author('Dmitry Kolesnikov <dmkolesnikov@gmail.com>').
 
 -export([
    start_link/0, init/1
