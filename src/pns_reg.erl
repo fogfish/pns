@@ -55,10 +55,16 @@ terminate(_, _) ->
 %%
 %% server-based registration serializes access to registry 
 %% allow to avoid race condition on key
-handle_call({register, Ns, Key, Pid}, _, S) ->
+handle_call({register, {{Ns, Key}, Val}=Req}, _, S) ->
    case pns:whereis(Ns, Key) of
       undefined ->
-         ets:insert(pns, {{Ns, Key}, Pid}),
+         ets:insert(pns, Req),
+         {reply, ok, S};
+      L when is_list(L), is_list(Val) ->
+         ets:insert(pns, {{Ns, Key}, lists:usort(Val ++ L)}),
+         {reply, ok, S};
+      L when is_list(L) ->
+         ets:insert(pns, {{Ns, Key}, lists:usort([Val|L])}),
          {reply, ok, S};
       _         ->
          {reply, conflict, S}
