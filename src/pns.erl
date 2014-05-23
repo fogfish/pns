@@ -36,6 +36,9 @@
   ,'!'/3
   ,pid/1
   ,pid/2
+  ,spawn_link/3
+  ,spawn_spec/3
+  ,spawn_spec/4
 ]).
 
 %%
@@ -148,6 +151,46 @@ pid(Key) ->
 
 pid(Ns, Key) ->
    fun() -> pns:register(Ns, Key) end.
+
+%%
+%% spawn and register process, the helper function
+%% to wrap register & spawn within supervisor
+%%
+%% e.g.
+%% -define(SPAWN(Type, Id, I, Args), 
+%%    {Id, {pns, spawn_link, [I, Id, {I, start_link, Args}]}, permanent, 5000, Type, dynamic}
+%% ).
+-spec(spawn_link/3 :: (atom(), any(), mfa()) -> {ok, pid()} | {error, any()}).
+
+spawn_link(Ns, Key, Mod) 
+ when is_atom(Mod) ->
+   pns:spawn_link(Ns, Key, {Mod, start_link, []});
+spawn_link(Ns, Key, {Mod, Args}) ->
+   pns:spawn_link(Ns, Key, {Mod, start_link, Args});
+spawn_link(Ns, Key, {Mod, Fun, Args}) ->
+   case erlang:apply(Mod, Fun, Args) of
+      {ok, Pid} ->
+         ok = register(Ns, Key, Pid),
+         {ok, Pid};
+      Error ->
+         Error
+   end.
+
+%%
+%% return supervisor specification
+-spec(spawn_spec/3 :: (atom(), any(), mfa()) -> any()).
+-spec(spawn_spec/4 :: (atom(), any(), atom(), any()) -> any()).
+
+spawn_spec(Type, Id, Mod)
+ when is_atom(Mod) ->
+   spawn_spec(Type, Id, {Mod, start_link, []});
+spawn_spec(Type, Id, {Mod, Args}) ->
+   spawn_spec(Type, Id, {Mod, start_link, Args});
+spawn_spec(Type, Id, {Mod, Fun, Args}) ->
+   {Id, {pns, spawn_link, [Mod, Id, {Mod, Fun, Args}]}, permanent, 5000, Type, dynamic}.
+
+spawn_spec(Type, Id, Mod, Args) ->
+   {Id, {pns, spawn_link, [Mod, Id, {Mod, start_link, Args}]}, permanent, 5000, Type, dynamic}.
 
 %%-----------------------------------------------------------------------------
 %%
