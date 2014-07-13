@@ -24,7 +24,9 @@ register_test() ->
    ok = pns:register(a, self()),
    ok = pns:register(test, b, self()),
    ok = pns:register(test, {a, b}, self()),
-   {badarg, _} = (catch pns:register(a, self()) ).
+   {'EXIT', _} = (catch pns:register(a, self()) ),
+   {'EXIT', _} = (catch pns:register(test, b, self()) ),
+   {'EXIT', _} = (catch pns:register(test, {a, b}, self()) ).
 
 whereis_test() ->
    Self = self(),
@@ -45,4 +47,23 @@ multiple_test() ->
    ok   = pns:register(test, d, [self()]),
    true = lists:member(Pid,    pns:whereis(test, d)),
    true = lists:member(self(), pns:whereis(test, d)).
+
+unregister_test() ->
+   ok = pns:unregister(a),
+   ok = pns:unregister(test, b),
+   ok = pns:unregister(test, {a,b}).
+
+use_native_test() ->
+   ok   = pns:register(a, self()),
+   Self = self(),
+   Self = erlang:whereis(a).
+
+use_urn_test() ->
+   ok   = pns:register({urn, test, b}, self()),
+   Self = self(),
+   Self = pns:whereis(test, b).
+
+
+
+
 

@@ -53,6 +53,11 @@ start() ->
 -spec(register/2 :: (any(), any()) -> ok).
 -spec(register/3 :: (any(), any(), any()) -> ok).
 
+register(Key, Pid)
+ when is_atom(Key) ->
+   erlang:register(Key, Pid), ok;
+register({urn, Ns, Key}, Pid) ->
+   pns:register(Ns, Key, Pid);
 register(Key, Pid) ->
    pns:register(local, Key, Pid).
 
@@ -68,7 +73,7 @@ register(Ns, Key, Pid) ->
             ok -> 
                ok;
             _  -> 
-               throw({badarg, {Ns, Key}})
+               exit({badarg, {Ns, Key}})
          end
    end.
 
@@ -77,6 +82,11 @@ register(Ns, Key, Pid) ->
 -spec(unregister/1 :: (any()) -> ok).
 -spec(unregister/2 :: (any(), any()) -> ok).
 
+unregister(Key)
+ when is_atom(Key) ->
+   erlang:unregister(Key), ok;
+unregister({urn, Ns, Key}) ->
+   pns:unregister(Ns, Key);
 unregister(Key) ->
    pns:unregister(local, Key).
 
@@ -90,6 +100,11 @@ unregister(Ns, Key) ->
 -spec(whereis/1 :: (any()) -> pid() | undefined).
 -spec(whereis/2 :: (any(), any()) -> pid() | undefined).
 
+whereis(Key)
+ when is_atom(Key) ->
+   erlang:whereis(Key);
+whereis({urn, Ns, Key}) ->
+   pns:whereis(Ns, Key);
 whereis(Key) ->
    pns:whereis(local, Key).
 
