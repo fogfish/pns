@@ -47,7 +47,7 @@ init(_) ->
    _ = ets:new(pns, [
       public,
       named_table,
-      ordered_set,   %% !? or set
+      ordered_set,       %% ordered set is O(log N) but benefits on iterate
       {read_concurrency, true}
    ]),
    {ok, undefined}.
