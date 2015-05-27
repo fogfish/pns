@@ -50,9 +50,11 @@ init(_) ->
       ordered_set,       %% ordered set is O(log N) but benefits on iterate
       {read_concurrency, true}
    ]),
+   _ = net_kernel:monitor_nodes(true),
    {ok, undefined}.
 
 terminate(_, _) ->
+   _ = net_kernel:monitor_nodes(false),
    ok.
 
 %%
@@ -81,6 +83,15 @@ handle_cast(_, S) ->
    {noreply, S}.
 
 %%
+handle_info({nodeup, _}, S) ->
+   {noreply, S};
+
+handle_info({nodedown, Node}, S) ->
+   spawn(fun() ->
+      ets:select_delete(pns, [{ {{'_', '_'}, '$1'}, [{'=:=', Node, {node, '$1'}}], [true] }])
+   end),
+   {noreply, S};
+
 handle_info(_, S) ->
    {noreply, S}.
 
