@@ -216,20 +216,8 @@ spawn_spec(Type, Id, Mod, Args) ->
 %%
 %% check if value is valid
 is_valid(X) 
- when is_pid(X), erlang:node(X) =:= erlang:node() ->
-   is_process_alive(X);
-
-is_valid(X)
  when is_pid(X) ->
-   Ref = erlang:monitor(process, X),
-   receive
-      {'DOWN', Ref, process, X, _} ->
-         false
-   after 0 ->
-      erlang:demonitor(Ref, [flush]),
-      true
-   end;
-
+   is_process_alive(X);
 is_valid(_) ->
    true.
 
@@ -240,7 +228,7 @@ new_val(Ns, Key, Pid) ->
 
 get_val({{_, _}, Pid})
  when is_pid(Pid) ->
-   case is_valid(Pid) of
+   case is_process_alive(Pid) of
       true  -> Pid;
       false -> undefined
    end;      
