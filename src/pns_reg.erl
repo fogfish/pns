@@ -31,7 +31,7 @@
 
 %%
 %% create new registry
--spec(start_link/0 :: () -> {ok, pid()} | {error, any()}).
+-spec start_link() -> {ok, pid()} | {error, any()}.
 
 start_link() ->
    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).

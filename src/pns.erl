@@ -50,8 +50,8 @@ start() ->
 %% associates key with a pid
 %% fails with badarg if association exists 
 %% and associated process is alive
--spec(register/2 :: (any(), any()) -> ok).
--spec(register/3 :: (any(), any(), any()) -> ok).
+-spec register(any(), any()) -> ok.
+-spec register(any(), any(), any()) -> ok.
 
 register(Key, Pid)
  when is_atom(Key) ->
@@ -79,8 +79,8 @@ register(Ns, Key, Pid) ->
 
 %%
 %% removes key registration
--spec(unregister/1 :: (any()) -> ok).
--spec(unregister/2 :: (any(), any()) -> ok).
+-spec unregister(any()) -> ok.
+-spec unregister(any(), any()) -> ok.
 
 unregister(Key)
  when is_atom(Key) ->
@@ -97,8 +97,8 @@ unregister(Ns, Key) ->
 %%
 %% returns the pid associated with key. 
 %% returns undefined if the name is not registered or process is dead   
--spec(whereis/1 :: (any()) -> pid() | undefined).
--spec(whereis/2 :: (any(), any()) -> pid() | undefined).
+-spec whereis(any()) -> pid() | undefined.
+-spec whereis(any(), any()) -> pid() | undefined.
 
 whereis(Key)
  when is_atom(Key) ->
@@ -116,8 +116,8 @@ whereis(Ns, Key) ->
  
 %%
 %% lookup
--spec(lookup/1 :: (any()) -> [pid()]).
--spec(lookup/2 :: (any(), any()) -> [pid()]).
+-spec lookup(any()) -> [pid()].
+-spec lookup(any(), any()) -> [pid()].
 
 lookup(Mask) ->
    lookup(local, Mask).
@@ -129,7 +129,7 @@ lookup(Ns, Mask) ->
 %%
 %% map function over name space
 %% Fun = fun({Uid, Pid}) 
--spec(map/2 :: (function(), atom()) -> list()).
+-spec map(function(), atom()) -> list().
 
 map(Fun, Ns0) ->
    qlc:e(
@@ -141,7 +141,7 @@ map(Fun, Ns0) ->
    
 %%
 %% fold function
--spec(fold/3 :: (function(), any(), atom()) -> list()).
+-spec fold(function(), any(), atom()) -> list().
 
 fold(Fun, Acc0, Ns0) ->
    qlc:fold(Fun, Acc0, 
@@ -175,7 +175,7 @@ pid(Ns, Key) ->
 %% -define(SPAWN(Type, Id, I, Args), 
 %%    {Id, {pns, spawn_link, [I, Id, {I, start_link, Args}]}, permanent, 5000, Type, dynamic}
 %% ).
--spec(spawn_link/3 :: (atom(), any(), mfa()) -> {ok, pid()} | {error, any()}).
+-spec spawn_link(atom(), any(), mfa()) -> {ok, pid()} | {error, any()}.
 
 spawn_link(Ns, Key, Mod) 
  when is_atom(Mod) ->
@@ -193,8 +193,8 @@ spawn_link(Ns, Key, {Mod, Fun, Args}) ->
 
 %%
 %% return supervisor specification
--spec(spawn_spec/3 :: (atom(), any(), mfa()) -> any()).
--spec(spawn_spec/4 :: (atom(), any(), atom(), any()) -> any()).
+-spec spawn_spec(atom(), any(), mfa()) -> any().
+-spec spawn_spec(atom(), any(), atom(), any()) -> any().
 
 spawn_spec(Type, Id, Mod)
  when is_atom(Mod) ->
