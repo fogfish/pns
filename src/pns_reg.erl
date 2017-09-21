@@ -69,8 +69,11 @@ handle_call({register, {{Ns, Key}, Val}=Req}, _, S) ->
       L when is_list(L) ->
          ets:insert(pns, {{Ns, Key}, lists:usort([Val|L])}),
          {reply, ok, S};
-      _         ->
-         {reply, conflict, S}
+      P when is_pid(P)  ->
+         {reply, conflict, S};
+      _ ->
+         ets:insert(pns, Req),
+         {reply, ok, S}
    end;
 
 handle_call(_, _, S) ->
