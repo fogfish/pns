@@ -83,10 +83,11 @@ register(Ns, Key, Pid) ->
 
 %%
 %% register support for `via` protocol
--spec register_name(key(), pid()) -> ok.
+-spec register_name(key(), pid()) -> yes.
 
 register_name(Key, Pid) ->
-   pns:register(Key, Pid).
+   ok = pns:register(Key, Pid),
+   yes.
 
 
 %%
