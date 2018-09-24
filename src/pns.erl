@@ -23,23 +23,27 @@
 -export([start/0]).
 -export([
    register/2
-  ,register/3
-  ,unregister/1
-  ,unregister/2
-  ,whereis/1
-  ,whereis/2
-  ,lookup/1
-  ,lookup/2
-  ,map/2
-  ,fold/3
-  ,'!'/2
-  ,'!'/3
-  ,pid/1
-  ,pid/2
-  ,spawn_link/3
-  ,spawn_spec/3
-  ,spawn_spec/4
+,  register/3
+,  register_name/2
+,  unregister/1
+,  unregister/2
+,  unregister_name/1
+,  whereis/1
+,  whereis/2
+,  whereis_name/1
+,  lookup/1
+,  lookup/2
+,  map/2
+,  fold/3
+,  '!'/2
+,  '!'/3
+,  pid/1
+,  pid/2
 ]).
+
+-export_type([ key/0 ]).
+
+-type key() :: {urn, atom(), _} | _.
 
 %%
 %% start application
@@ -78,6 +82,14 @@ register(Ns, Key, Pid) ->
    end.
 
 %%
+%% register support for `via` protocol
+-spec register_name(key(), pid()) -> ok.
+
+register_name(Key, Pid) ->
+   pns:register(Key, Pid).
+
+
+%%
 %% removes key registration
 -spec unregister(any()) -> ok.
 -spec unregister(any(), any()) -> ok.
@@ -93,6 +105,13 @@ unregister(Key) ->
 unregister(Ns, Key) ->
    ets:delete(pns, {Ns, Key}),
    ok.
+
+%%
+%% unregister support for `via` protocol
+-spec unregister_name(key()) -> ok.
+
+unregister_name(Key) ->
+   pns:unregister(Key).
 
 %%
 %% returns the pid associated with key. 
@@ -113,7 +132,14 @@ whereis(Ns, Key) ->
       [Val] -> get_val(Val);
       _     -> undefined
    end.   
- 
+
+%%
+%% returns pid associated with key, support for `via` protocol
+-spec whereis_name(key()) -> pid().
+
+whereis_name(Key) ->
+   pns:whereis(Key).
+
 %%
 %% lookup
 -spec lookup(any()) -> [pid()].
@@ -167,45 +193,6 @@ pid(Key) ->
 pid(Ns, Key) ->
    fun() -> pns:register(Ns, Key) end.
 
-%%
-%% spawn and register process, the helper function
-%% to wrap register & spawn within supervisor
-%%
-%% e.g.
-%% -define(SPAWN(Type, Id, I, Args), 
-%%    {Id, {pns, spawn_link, [I, Id, {I, start_link, Args}]}, permanent, 5000, Type, dynamic}
-%% ).
--spec spawn_link(atom(), any(), mfa()) -> {ok, pid()} | {error, any()}.
-
-spawn_link(Ns, Key, Mod) 
- when is_atom(Mod) ->
-   pns:spawn_link(Ns, Key, {Mod, start_link, []});
-spawn_link(Ns, Key, {Mod, Args}) ->
-   pns:spawn_link(Ns, Key, {Mod, start_link, Args});
-spawn_link(Ns, Key, {Mod, Fun, Args}) ->
-   case erlang:apply(Mod, Fun, Args) of
-      {ok, Pid} ->
-         ok = register(Ns, Key, Pid),
-         {ok, Pid};
-      Error ->
-         Error
-   end.
-
-%%
-%% return supervisor specification
--spec spawn_spec(atom(), any(), mfa()) -> any().
--spec spawn_spec(atom(), any(), atom(), any()) -> any().
-
-spawn_spec(Type, Id, Mod)
- when is_atom(Mod) ->
-   spawn_spec(Type, Id, {Mod, start_link, []});
-spawn_spec(Type, Id, {Mod, Args}) ->
-   spawn_spec(Type, Id, {Mod, start_link, Args});
-spawn_spec(Type, Id, {Mod, Fun, Args}) ->
-   {Id, {pns, spawn_link, [Mod, Id, {Mod, Fun, Args}]}, permanent, 5000, Type, dynamic}.
-
-spawn_spec(Type, Id, Mod, Args) ->
-   {Id, {pns, spawn_link, [Mod, Id, {Mod, start_link, Args}]}, permanent, 5000, Type, dynamic}.
 
 %%-----------------------------------------------------------------------------
 %%
